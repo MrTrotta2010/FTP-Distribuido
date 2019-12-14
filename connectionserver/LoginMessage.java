@@ -10,6 +10,7 @@ public class LoginMessage{
 	public static final String PERM_DENIED = "O usuário não tem permissão para executar esse comando!\n";
 	public static final String REMOTE_ERR = "Erro no servidor remoto!\n";
 	public static final String HOME_FAIL = "Ocorreu um erro ao criar a pasta 'home' do usuário!\n";
+	public static final String DEL_FAIL = "Ocorreu um erro ao remover a pasta 'home' do usuário!\n";
 	public static final String DBCONN_FAIL = "Ocorreu um erro ao conectar-se ao banco de dados!\n";
 	
     // Sucesso

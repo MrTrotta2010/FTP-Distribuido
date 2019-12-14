@@ -147,23 +147,51 @@ public class UserControllerImpl extends UnicastRemoteObject implements UserContr
 		if (!checkAdminPswd(currentUser, currentUserpswd))
 			return LoginMessage.INVALID_PSWD;
 		
-		String query = "DELETE FROM Users WHERE userName='"+username+"'";
-		PreparedStatement statement;
-		int result;
-		
-		try{
-			statement = database.prepareStatement(query);
-			result = statement.executeUpdate();
-		}
-		catch (SQLException e) {
+			
+		try {
+			database.setAutoCommit(false);
+			String query = "DELETE FROM Users WHERE userName='"+username+"'";
+			PreparedStatement statement;
+			int result;
+			
+			try{
+				statement = database.prepareStatement(query);
+				result = statement.executeUpdate();
+			}
+			catch (SQLException e) {
+				database.rollback();
+				database.setAutoCommit(true);
+				System.err.println(e.getMessage());
+				return LoginMessage.USER_NEXISTS;
+			}
+			if (result == 0) {
+				database.rollback();
+				database.setAutoCommit(true);
+				return LoginMessage.USER_NEXISTS;
+			}
+			
+			// Remove o diretório
+			try {
+				FileController fileC = (FileController) Naming.lookup("//172.18.0.206:1099/FileService");
+				if (fileC.delUserHome(username) != 0) {
+					this.database.rollback();
+					database.setAutoCommit(true);
+					return LoginMessage.DEL_FAIL;
+				}
+			} catch (Exception e) {
+				System.out.println("Falha ao tentar conectar-se ao servidor de arquivos!");
+				this.database.rollback();
+				database.setAutoCommit(true);
+				return LoginMessage.REMOTE_ERR;
+			}
+			
+			database.commit();
+			database.setAutoCommit(true);
+			return LoginMessage.DEL_SUCCESS;
+		} catch (SQLException e) {
 			System.err.println(e.getMessage());
-			return LoginMessage.USER_NEXISTS;
+			return LoginMessage.DBCONN_FAIL;
 		}
-		
-		if (result == 0)
-		return LoginMessage.USER_NEXISTS;
-		
-		return LoginMessage.DEL_SUCCESS;
 	}
 
 	@Override

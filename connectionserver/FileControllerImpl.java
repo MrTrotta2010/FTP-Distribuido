@@ -4,9 +4,14 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.io.File;
+import java.io.RandomAccessFile;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.IOException;
+import java.util.Comparator;
 
 public class FileControllerImpl extends UnicastRemoteObject implements FileController{
 	
@@ -20,6 +25,28 @@ public class FileControllerImpl extends UnicastRemoteObject implements FileContr
 		try {
 			File dir = new File("Homes/"+user);
 			Files.createDirectory(dir.toPath());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			return -1;
+		}
+		return 0;
+	}
+
+	private void deleteDirectoryStream(Path path) throws IOException {
+		Files.walk(path).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+	}
+	
+	public int delUserHome(String user) throws RemoteException {
+		try {
+//			File dir = new File("Homes/"+user);
+			deleteDirectoryStream(Paths.get("Homes/"+user));
+			// File[] allContents = dir.listFiles();
+			// if (allContents != null) {
+			// 	for (File file : allContents) {
+			// 		deleteDirectory(file);
+			// 	}
+			// }
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -112,7 +139,7 @@ public class FileControllerImpl extends UnicastRemoteObject implements FileContr
 			if (!append) f.createNewFile();
 
 			FileOutputStream fileOut = new FileOutputStream(filePath, append);
-			fileOut.write(buffer, 0, bufferLength);;
+			fileOut.write(buffer, 0, bufferLength);
 			fileOut.close();
 		}
 		catch (Exception e) {
@@ -123,9 +150,35 @@ public class FileControllerImpl extends UnicastRemoteObject implements FileContr
 	}
 
 	@Override
+	public byte[] get(String filePath, long offset, int bufferLength) throws RemoteException {
+		byte[] buffer = new byte[bufferLength];
+		try {
+			RandomAccessFile file = new RandomAccessFile(filePath, "r");
+	
+			file.seek(offset);
+			file.readFully(buffer);
+			file.close();
+	
+		} catch (Exception e) {
+			e.printStackTrace();
+			buffer = null;
+		}
+		return buffer;
+	}
+
+	@Override
 	public boolean direxists(String path) throws RemoteException {
 		if ((new File(path)).exists())
 			return true;
 		return false;
+	}
+
+	@Override
+	public long getfsize(String path) throws RemoteException {
+		System.out.println(path);
+		File file = new File(path);
+		if (!file.exists())
+			return -1;
+		return file.length();
 	}
 }
