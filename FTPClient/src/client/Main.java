@@ -40,7 +40,7 @@ public class Main {
                 String input = scan.nextLine();
 
                 String[] arguments = input.split(" ");
-                Archive file = null;
+                FTC file = null;
                 
                 if (arguments[0].equalsIgnoreCase("exit")) break;
                 else {
@@ -52,7 +52,7 @@ public class Main {
                     }
                     
                     if (arguments[0].equalsIgnoreCase("put")) {
-                        file = new Archive(input.split("::")[1]);
+                        file = new FTC(input.split("::")[1]);
                         long size = file.getSize();
                         if (size < 0) {
                             System.out.println(">> O arquivo não existe!");
@@ -84,7 +84,7 @@ public class Main {
                         }
                         System.out.print(">> Digite o diretório de destino: ");
                         String dir = scan.nextLine();
-                        file = new Archive(dir);
+                        file = new FTC(dir);
                         if (!file.exists()) {
                             System.out.println("<< O diretório não existe!");
                             sendMessage("Not allright\n", writeBuffer, aes);
