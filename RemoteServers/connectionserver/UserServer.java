@@ -19,7 +19,7 @@ public class UserServer{
 			System.err.println("Deu erro");
 			e.printStackTrace();
 			System.exit(1);
-        }
+        	}
 
 		try{
 			UserController c = new UserControllerImpl(database);
